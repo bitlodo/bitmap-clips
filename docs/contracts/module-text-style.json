@@ -1,0 +1,54 @@
+{
+  "id": "text-style",
+  "label": "Text Style",
+  "settingsKeys": [],
+  "instanceKeys": [
+    "textStyleOverride"
+  ],
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "textStyleOverride": {
+        "default": null,
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "font": {
+                "type": "string",
+                "enum": [
+                  "sans",
+                  "modern",
+                  "serif",
+                  "mono",
+                  "classic",
+                  "bitmap"
+                ]
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "secondaryColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "panelColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "id": "camera",
+  "label": "Camera",
+  "settingsKeys": [
+    "inheritLastCamera",
+    "cameraA",
+    "cameraB",
+    "rotation",
+    "rotationSpeed",
+    "zoomEnabled",
+    "zoomMode",
+    "cameraZoomStrength",
+    "cameraZoomEasing"
+  ],
+  "instanceKeys": [
+    "framing"
+  ],
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "rotation": {
+        "default": false,
+        "type": "boolean"
+      },
+      "rotationSpeed": {
+        "default": 2,
+        "type": "number",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "zoomEnabled": {
+        "default": false,
+        "type": "boolean"
+      },
+      "zoomMode": {
+        "default": "zoom-in",
+        "type": "string",
+        "enum": [
+          "zoom-in",
+          "zoom-out"
+        ]
+      },
+      "cameraZoomStrength": {
+        "default": 1,
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 2
+      },
+      "cameraZoomEasing": {
+        "default": "SineInOut",
+        "type": "string",
+        "enum": [
+          "Linear",
+          "Smooth",
+          "SineIn",
+          "SineOut",
+          "SineInOut",
+          "QuadIn",
+          "QuadOut",
+          "QuadInOut",
+          "CubicIn",
+          "CubicOut",
+          "CubicInOut",
+          "BackIn",
+          "BackOut",
+          "BackInOut",
+          "BounceIn",
+          "BounceOut",
+          "BounceInOut",
+          "ElasticIn",
+          "ElasticOut",
+          "ElasticInOut"
+        ]
+      },
+      "inheritLastCamera": {
+        "default": true,
+        "type": "boolean"
+      },
+      "cameraA": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "target": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "fov": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "position",
+          "target",
+          "fov"
+        ]
+      },
+      "cameraB": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "target": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "fov": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "position",
+          "target",
+          "fov"
+        ]
+      },
+      "framing": {
+        "type": "object",
+        "properties": {
+          "yawOffset": {
+            "type": "number",
+            "minimum": -60,
+            "maximum": 60
+          },
+          "pitchOffset": {
+            "type": "number",
+            "minimum": -20,
+            "maximum": 20
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 0.75,
+            "maximum": 1.3
+          }
+        },
+        "required": [
+          "yawOffset",
+          "pitchOffset",
+          "zoom"
+        ]
+      }
+    },
+    "required": [
+      "framing"
+    ]
+  }
+}

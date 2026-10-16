@@ -1,0 +1,29 @@
+{
+  "id": "fade",
+  "label": "Fade",
+  "settingsKeys": [],
+  "instanceKeys": [
+    "fadeInFrames",
+    "fadeOutFrames"
+  ],
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "fadeInFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      },
+      "fadeOutFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      }
+    },
+    "required": [
+      "fadeInFrames",
+      "fadeOutFrames"
+    ]
+  }
+}

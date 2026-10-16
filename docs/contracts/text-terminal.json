@@ -1,0 +1,235 @@
+{
+  "format": "bitmap-text-contract",
+  "formatVersion": 1,
+  "id": "terminal",
+  "settingsVersion": 1,
+  "name": "Terminal title",
+  "description": "Typewriter · prompt · cursor",
+  "layout": "screen",
+  "supportedProperties": [
+    "Custom text",
+    "Bitmap name",
+    "TX count",
+    "Output value",
+    "TX index",
+    "Parcel size"
+  ],
+  "durationFrames": {
+    "min": 15,
+    "default": 90
+  },
+  "controls": [
+    {
+      "key": "source",
+      "label": "Content source",
+      "kind": "select",
+      "options": [
+        {
+          "value": "manual",
+          "label": "Write text"
+        },
+        {
+          "value": "identity",
+          "label": "Bitmap name"
+        },
+        {
+          "value": "transactions",
+          "label": "Transaction count"
+        },
+        {
+          "value": "volume",
+          "label": "Block output value"
+        },
+        {
+          "value": "transaction",
+          "label": "Transaction output value"
+        }
+      ]
+    },
+    {
+      "key": "txIndex",
+      "label": "Transaction index",
+      "kind": "number",
+      "min": 0,
+      "step": 1,
+      "when": {
+        "key": "source",
+        "value": "transaction"
+      }
+    },
+    {
+      "key": "kicker",
+      "label": "Eyebrow",
+      "kind": "text",
+      "maxLength": 100,
+      "when": {
+        "key": "source",
+        "value": "manual"
+      }
+    },
+    {
+      "key": "text",
+      "label": "Main text",
+      "kind": "textarea",
+      "maxLength": 500,
+      "when": {
+        "key": "source",
+        "value": "manual"
+      }
+    }
+  ],
+  "timelineControls": [
+    {
+      "key": "fadeInFrames",
+      "label": "Fade in / seconds"
+    },
+    {
+      "key": "fadeOutFrames",
+      "label": "Fade out / seconds"
+    }
+  ],
+  "modules": [
+    "text-style",
+    "fade"
+  ],
+  "settingsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "source": {
+        "default": "manual",
+        "type": "string",
+        "enum": [
+          "manual",
+          "identity",
+          "transactions",
+          "transaction",
+          "volume"
+        ]
+      },
+      "text": {
+        "default": "Your message here",
+        "type": "string",
+        "maxLength": 500
+      },
+      "kicker": {
+        "default": "",
+        "type": "string",
+        "maxLength": 100
+      },
+      "txIndex": {
+        "default": 0,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    }
+  },
+  "commonInstanceSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "startFrame": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "durationFrames": {
+        "type": "integer",
+        "minimum": 15,
+        "maximum": 9007199254740991
+      },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "type": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "settingsVersion": {
+        "type": "number",
+        "const": 1
+      },
+      "position": {
+        "type": "string",
+        "enum": [
+          "bottom",
+          "center",
+          "top"
+        ]
+      },
+      "scale": {
+        "type": "number",
+        "minimum": 0.7,
+        "maximum": 1.4
+      },
+      "textStyleOverride": {
+        "default": null,
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "font": {
+                "type": "string",
+                "enum": [
+                  "sans",
+                  "modern",
+                  "serif",
+                  "mono",
+                  "classic",
+                  "bitmap"
+                ]
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "secondaryColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "panelColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "fadeInFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      },
+      "fadeOutFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      }
+    },
+    "required": [
+      "startFrame",
+      "durationFrames",
+      "id",
+      "type",
+      "settingsVersion",
+      "position",
+      "scale",
+      "textStyleOverride",
+      "fadeInFrames",
+      "fadeOutFrames"
+    ],
+    "additionalProperties": false
+  }
+}

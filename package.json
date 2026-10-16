@@ -1,0 +1,31 @@
+{
+  "name": "bitmap-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "engines": {
+    "bun": ">=1.4.2"
+  },
+  "scripts": {
+    "dev": "bun --watch scripts/dev.ts",
+    "start": "bun src/server.ts",
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "templates": "bun scripts/template-catalog.ts",
+    "contracts": "bun scripts/export-clip-contracts.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "typescript": "5.9.3",
+    "@types/three": "0.185.4"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-deterministic-compat": "0.21.0",
+    "@mediabunny/aac-encoder": "^1.61.3",
+    "mediabunny": "^1.61.3",
+    "three": "0.185.1",
+    "zod": "^4.6.5"
+  }
+}

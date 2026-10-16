@@ -1,0 +1,549 @@
+{
+  "format": "bitmap-clip-contract",
+  "formatVersion": 1,
+  "id": "reveal",
+  "settingsVersion": 1,
+  "name": "Reveal",
+  "description": "Introduce the bitmap with an animated reveal.",
+  "complexity": "simple",
+  "durationFrames": {
+    "min": 30,
+    "max": 1800,
+    "default": 150
+  },
+  "controls": [
+    {
+      "key": "revealType",
+      "label": "Reveal type",
+      "kind": "select",
+      "options": [
+        {
+          "value": "build",
+          "label": "Build"
+        },
+        {
+          "value": "wave",
+          "label": "Wave"
+        },
+        {
+          "value": "radial",
+          "label": "Radial"
+        },
+        {
+          "value": "scale-rotate",
+          "label": "Scale & Rotate"
+        },
+        {
+          "value": "gravity",
+          "label": "Gravity"
+        }
+      ]
+    },
+    {
+      "key": "revealFraction",
+      "label": "Opening duration",
+      "kind": "range",
+      "min": 0.1,
+      "max": 0.8,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "build"
+      }
+    },
+    {
+      "key": "stagger",
+      "label": "Opening stagger",
+      "kind": "range",
+      "min": 0,
+      "max": 0.9,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "build"
+      }
+    },
+    {
+      "key": "revealFraction",
+      "label": "Opening duration",
+      "kind": "range",
+      "min": 0.1,
+      "max": 0.8,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "wave"
+      }
+    },
+    {
+      "key": "stagger",
+      "label": "Opening stagger",
+      "kind": "range",
+      "min": 0,
+      "max": 0.9,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "wave"
+      }
+    },
+    {
+      "key": "strength",
+      "label": "Intensity",
+      "kind": "range",
+      "min": 0.1,
+      "max": 2,
+      "step": 0.05,
+      "when": {
+        "key": "revealType",
+        "value": "wave"
+      }
+    },
+    {
+      "key": "revealFraction",
+      "label": "Opening duration",
+      "kind": "range",
+      "min": 0.1,
+      "max": 0.8,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "scale-rotate"
+      }
+    },
+    {
+      "key": "stagger",
+      "label": "Opening stagger",
+      "kind": "range",
+      "min": 0,
+      "max": 0.9,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "scale-rotate"
+      }
+    },
+    {
+      "key": "strength",
+      "label": "Intensity",
+      "kind": "range",
+      "min": 0.1,
+      "max": 2,
+      "step": 0.05,
+      "when": {
+        "key": "revealType",
+        "value": "scale-rotate"
+      }
+    },
+    {
+      "key": "radialDuration",
+      "label": "Opening duration",
+      "kind": "range",
+      "min": 0.1,
+      "max": 0.8,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "radial"
+      }
+    },
+    {
+      "key": "radialStagger",
+      "label": "Opening stagger",
+      "kind": "range",
+      "min": 0,
+      "max": 0.9,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "radial"
+      }
+    },
+    {
+      "key": "radialIntensity",
+      "label": "Intensity",
+      "kind": "range",
+      "min": 0.1,
+      "max": 2,
+      "step": 0.05,
+      "when": {
+        "key": "revealType",
+        "value": "radial"
+      }
+    },
+    {
+      "key": "buildOrder",
+      "label": "Build order",
+      "kind": "select",
+      "options": [
+        {
+          "value": "sequential",
+          "label": "Sequential"
+        },
+        {
+          "value": "random",
+          "label": "Random"
+        }
+      ],
+      "when": {
+        "key": "revealType",
+        "value": "build"
+      }
+    },
+    {
+      "key": "bounceBack",
+      "label": "Bounce back",
+      "kind": "range",
+      "min": 0,
+      "max": 0.6,
+      "step": 0.01,
+      "unit": "percent",
+      "when": {
+        "key": "revealType",
+        "value": "build"
+      }
+    },
+    {
+      "key": "speed",
+      "label": "Gravity Speed",
+      "kind": "range",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1,
+      "unit": "multiplier",
+      "when": {
+        "key": "revealType",
+        "value": "gravity"
+      }
+    },
+    {
+      "key": "dropHeight",
+      "label": "Drop Height",
+      "kind": "range",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "when": {
+        "key": "revealType",
+        "value": "gravity"
+      }
+    },
+    {
+      "key": "flow",
+      "label": "Flow",
+      "kind": "range",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "when": {
+        "key": "revealType",
+        "value": "gravity"
+      }
+    }
+  ],
+  "cameraControls": [
+    {
+      "key": "cameraA",
+      "label": "Initial camera",
+      "at": 0
+    }
+  ],
+  "timelineControls": [
+    {
+      "key": "fadeInFrames",
+      "label": "Fade in / seconds"
+    },
+    {
+      "key": "fadeOutFrames",
+      "label": "Fade out / seconds"
+    }
+  ],
+  "modules": [
+    "camera",
+    "scene-style",
+    "fade"
+  ],
+  "settingsSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "radialDuration": {
+        "default": 0.6,
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 0.8
+      },
+      "radialStagger": {
+        "default": 0.7,
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.9
+      },
+      "radialIntensity": {
+        "default": 2,
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 2
+      },
+      "revealType": {
+        "default": "build",
+        "type": "string",
+        "enum": [
+          "build",
+          "wave",
+          "radial",
+          "scale-rotate",
+          "gravity"
+        ]
+      },
+      "revealFraction": {
+        "default": 0.4,
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 0.8
+      },
+      "stagger": {
+        "default": 0.7,
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.9
+      },
+      "strength": {
+        "default": 0.45,
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 2
+      },
+      "buildOrder": {
+        "default": "random",
+        "type": "string",
+        "enum": [
+          "sequential",
+          "random"
+        ]
+      },
+      "bounceBack": {
+        "default": 0.6,
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.6
+      },
+      "speed": {
+        "default": 2,
+        "type": "number",
+        "minimum": 0.5,
+        "maximum": 5
+      },
+      "dropHeight": {
+        "default": 10,
+        "type": "number",
+        "minimum": 1,
+        "maximum": 20
+      },
+      "flow": {
+        "default": 7,
+        "type": "number",
+        "minimum": 1,
+        "maximum": 10
+      }
+    }
+  },
+  "commonInstanceSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "startFrame": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "durationFrames": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 1800
+      },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "type": {
+        "type": "string",
+        "minLength": 1
+      },
+      "settingsVersion": {
+        "type": "number",
+        "const": 1
+      },
+      "seed": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999999
+      },
+      "framing": {
+        "type": "object",
+        "properties": {
+          "yawOffset": {
+            "type": "number",
+            "minimum": -60,
+            "maximum": 60
+          },
+          "pitchOffset": {
+            "type": "number",
+            "minimum": -20,
+            "maximum": 20
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 0.75,
+            "maximum": 1.3
+          }
+        },
+        "required": [
+          "yawOffset",
+          "pitchOffset",
+          "zoom"
+        ],
+        "additionalProperties": false
+      },
+      "styleOverride": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "cubeType": {
+                "type": "string",
+                "enum": [
+                  "square",
+                  "chamfered",
+                  "rounded-small",
+                  "rounded-large"
+                ]
+              },
+              "cameraType": {
+                "type": "string",
+                "enum": [
+                  "perspective",
+                  "isometric"
+                ]
+              },
+              "background": {
+                "type": "string",
+                "enum": [
+                  "void",
+                  "studio",
+                  "paper"
+                ]
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "material": {
+                "type": "string",
+                "enum": [
+                  "solid",
+                  "neon",
+                  "wireframe",
+                  "hologram"
+                ]
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "bloom": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 0.6
+              },
+              "shadows": {
+                "type": "boolean"
+              },
+              "grid": {
+                "type": "boolean"
+              },
+              "scanlines": {
+                "type": "boolean"
+              },
+              "shadowOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "fog": {
+                "type": "boolean"
+              },
+              "fogNear": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 20
+              },
+              "fogFar": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 40
+              },
+              "lightRotation": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "lightIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "ambientIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "rimIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "fadeInFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      },
+      "fadeOutFrames": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 60
+      }
+    },
+    "required": [
+      "startFrame",
+      "durationFrames",
+      "id",
+      "type",
+      "settingsVersion",
+      "seed",
+      "framing",
+      "styleOverride",
+      "fadeInFrames",
+      "fadeOutFrames"
+    ],
+    "additionalProperties": false
+  },
+  "implementation": "src/clips/reveal/index.ts"
+}

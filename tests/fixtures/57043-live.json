@@ -1,0 +1,29 @@
+{
+  "capturedAt": "2026-10-06T13:28:48.012Z",
+  "origin": "https://ordinals.com",
+  "bitmap": 57043,
+  "sat": 685209781492025,
+  "id": "a00e806b17f2ea87ea2436a1a294f38e8b9fb36a79b3580471f7897f942eb0c6i0",
+  "responses": {
+    "/r/blockheight": {
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "body": "970178"
+    },
+    "/r/inscription/a00e806b17f2ea87ea2436a1a294f38e8b9fb36a79b3580471f7897f942eb0c6i0": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\"charms\":[],\"content_type\":\"text/plain;charset=utf-8\",\"content_length\":12,\"delegate\":null,\"fee\":3654,\"height\":792752,\"id\":\"a00e806b17f2ea87ea2436a1a294f38e8b9fb36a79b3580471f7897f942eb0c6i0\",\"number\":10699366,\"output\":\"82a202ec8667d1e70febacf9f90625d658eda9b205159d4dfd3357f1454e455c:0\",\"sat\":685209781492025,\"satpoint\":\"82a202ec8667d1e70febacf9f90625d658eda9b205159d4dfd3357f1454e455c:0:0\",\"timestamp\":1685848236,\"value\":546,\"address\":\"bc1ps29407ejcrfxfdmqssxdj95ukzm85awdlkzmt0u59yfpcl3hu7aqngtach\"}"
+    },
+    "/inscription/a00e806b17f2ea87ea2436a1a294f38e8b9fb36a79b3580471f7897f942eb0c6i0": {
+      "status": 406,
+      "contentType": "text/plain; charset=utf-8",
+      "body": "JSON API disabled"
+    },
+    "/content/a00e806b17f2ea87ea2436a1a294f38e8b9fb36a79b3580471f7897f942eb0c6i0": {
+      "status": 200,
+      "contentType": "text/plain;charset=utf-8",
+      "body": "57043.bitmap"
+    }
+  }
+}

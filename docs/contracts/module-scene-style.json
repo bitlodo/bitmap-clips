@@ -1,0 +1,122 @@
+{
+  "id": "scene-style",
+  "label": "Scene Settings",
+  "settingsKeys": [],
+  "instanceKeys": [
+    "styleOverride"
+  ],
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "styleOverride": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "cubeType": {
+                "type": "string",
+                "enum": [
+                  "square",
+                  "chamfered",
+                  "rounded-small",
+                  "rounded-large"
+                ]
+              },
+              "cameraType": {
+                "type": "string",
+                "enum": [
+                  "perspective",
+                  "isometric"
+                ]
+              },
+              "background": {
+                "type": "string",
+                "enum": [
+                  "void",
+                  "studio",
+                  "paper"
+                ]
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "material": {
+                "type": "string",
+                "enum": [
+                  "solid",
+                  "neon",
+                  "wireframe",
+                  "hologram"
+                ]
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[a-f\\d]{6}$"
+              },
+              "bloom": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 0.6
+              },
+              "shadows": {
+                "type": "boolean"
+              },
+              "grid": {
+                "type": "boolean"
+              },
+              "scanlines": {
+                "type": "boolean"
+              },
+              "shadowOpacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "fog": {
+                "type": "boolean"
+              },
+              "fogNear": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 20
+              },
+              "fogFar": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 40
+              },
+              "lightRotation": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "lightIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "ambientIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "rimIntensity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 8
+              }
+            }
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "styleOverride"
+    ]
+  }
+}
