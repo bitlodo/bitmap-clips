@@ -1,2 +1,2 @@
 # bitmap-clips
-Generate viral clips from your bitmaps.
+Generate viral clips from your bitmaps
