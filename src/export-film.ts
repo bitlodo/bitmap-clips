@@ -14,10 +14,10 @@ export async function exportMode(project:RenderableFilm,quality:'720'|'1080'):Pr
   if('VideoEncoder' in globalThis){
     if(project.music&&!aacRegistered&&!await canEncodeAudio('aac',{sampleRate:44100,numberOfChannels:2})){registerAacEncoder();aacRegistered=true;}
 
-    if(await canEncodeVideo('avc',{width,height,frameRate:30,quality:new Quality({bitrate:quality==='1080'?8_000_000:4_000_000})}) && (!project.music || await canEncodeAudio('aac',{sampleRate:44100,numberOfChannels:2})))
+    if(await canEncodeVideo('avc',{width,height,frameRate:30,quality:new Quality({bitrate:qualityBitrate(width,height)})}) && (!project.music || await canEncodeAudio('aac',{sampleRate:44100,numberOfChannels:2})))
       return {name:'MP4 · H.264'+(project.music?' + AAC':''),extension:'mp4',method:'frames',video:'avc',audio:'aac',mime:'video/mp4'};
     for(const codec of ['vp9','vp8'] as const){
-      if(await canEncodeVideo(codec,{width,height,frameRate:30,quality:new Quality({bitrate:quality==='1080'?8_000_000:4_000_000})}) && (!project.music || await canEncodeAudio('opus',{sampleRate:44100,numberOfChannels:2})))
+      if(await canEncodeVideo(codec,{width,height,frameRate:30,quality:new Quality({bitrate:qualityBitrate(width,height)})}) && (!project.music || await canEncodeAudio('opus',{sampleRate:44100,numberOfChannels:2})))
         return {name:`WebM · ${codec.toUpperCase()}`+(project.music?' + Opus':''),extension:'webm',method:'frames',video:codec,audio:'opus',mime:'video/webm'};
     }
   }
@@ -38,7 +38,9 @@ export async function renderVideo<T extends RenderableFilm>(renderer:VideoRender
   if(mode.method==='realtime')return realtimeExport(renderer,project,width,height,mode,signal,progress);
   const target=new BufferTarget(),output=new Output({target,format:mode.extension==='mp4'?new Mp4OutputFormat({fastStart:'in-memory'}):new WebMOutputFormat()});
   renderer.render(project,0,width,height,project.renderQuality?.export??standardQuality);
-  const source=new CanvasSource(renderer.canvas,{codec:mode.video!,quality:new Quality({bitrate:quality==='1080'?8_000_000:4_000_000}),keyFrameInterval:2});
+  const encodingCanvas=createEncodingCanvas(width,height);
+  copyEncodingFrame(encodingCanvas,renderer.canvas);
+  const source=new CanvasSource(encodingCanvas,{codec:mode.video!,quality:new Quality({bitrate:qualityBitrate(width,height)}),keyFrameInterval:2});
   output.addVideoTrack(source,{frameRate:30});
   let music:AudioBufferSource|undefined;
   if(project.music){music=new AudioBufferSource({codec:mode.audio!,quality:new Quality({bitrate:128_000})});output.addAudioTrack(music);}
@@ -49,6 +51,7 @@ export async function renderVideo<T extends RenderableFilm>(renderer:VideoRender
     const frames=Math.round(project.duration*30);
     for(let frame=0;frame<frames;frame++){
       signal.throwIfAborted();renderer.render(project,frame/30,width,height,project.renderQuality?.export??standardQuality);
+      copyEncodingFrame(encodingCanvas,renderer.canvas);
       await source.add(frame/30,1/30,{keyFrame:frame%60===0});
       if(frame%4===0){progress((frame+1)/frames,`Frame ${frame+1} / ${frames}`);await yieldUI();}
     }
@@ -59,7 +62,9 @@ export async function renderVideo<T extends RenderableFilm>(renderer:VideoRender
 }
 async function realtimeExport<T extends RenderableFilm>(renderer:VideoRenderer<T>,project:T,width:number,height:number,mode:ExportMode,signal:AbortSignal,progress:(value:number,phase:string)=>void):Promise<Blob>{
   renderer.render(project,0,width,height,project.renderQuality?.export??standardQuality);
-  const stream=renderer.canvas.captureStream(30),chunks:Blob[]=[];
+  const encodingCanvas=createEncodingCanvas(width,height);
+  copyEncodingFrame(encodingCanvas,renderer.canvas);
+  const stream=encodingCanvas.captureStream(30),chunks:Blob[]=[];
   let ctx:AudioContext|undefined,score:AudioBufferSourceNode|undefined,raf=0;
   let failure:unknown;
   try{
@@ -79,7 +84,7 @@ async function realtimeExport<T extends RenderableFilm>(renderer:VideoRenderer<T
       const tick=()=>{
         if(recorder.state==='inactive')return;
         const time=Math.min(project.duration,(performance.now()-start)/1000);
-        try{renderer.render(project,time,width,height,project.renderQuality?.export??standardQuality);progress(time/project.duration,'Recording in real time…');}
+        try{renderer.render(project,time,width,height,project.renderQuality?.export??standardQuality);copyEncodingFrame(encodingCanvas,renderer.canvas);progress(time/project.duration,'Recording in real time…');}
         catch(error){failure=error;recorder.stop();return;}
         if(time>=project.duration){recorder.stop();return;}raf=requestAnimationFrame(tick);
       };
@@ -88,4 +93,15 @@ async function realtimeExport<T extends RenderableFilm>(renderer:VideoRenderer<T
     return new Blob(chunks,{type:mode.mime});
   }finally{cancelAnimationFrame(raf);try{score?.stop();}catch{}stream.getTracks().forEach(t=>t.stop());await ctx?.close();}
 }
-function qualityBitrate(width:number,height:number){return width*height>1_000_000?8_000_000:4_000_000;}
+/** Detailed moving geometry needs more bandwidth than ordinary camera footage. */
+export function qualityBitrate(width:number,height:number){return width*height>1_000_000?24_000_000:12_000_000;}
+function createEncodingCanvas(width:number,height:number){
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ canvas.getContext('2d',{alpha:false});return canvas;
+}
+/** Video has no alpha channel: flatten fades and scene gaps explicitly before encoding. */
+export function copyEncodingFrame(target:HTMLCanvasElement,source:HTMLCanvasElement){
+ const ctx=target.getContext('2d')!;
+ ctx.fillStyle='#000000';ctx.fillRect(0,0,target.width,target.height);
+ ctx.drawImage(source,0,0,target.width,target.height);
+}

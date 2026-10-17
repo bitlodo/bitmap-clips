@@ -9,7 +9,7 @@ export const renderQualityProfileSchema=z.object({
 export type RenderQualityProfile=z.infer<typeof renderQualityProfileSchema>;
 export const renderQualitySchema=z.object({
  preview:renderQualityProfileSchema.default(()=>renderQualityProfileSchema.parse({})),
- export:renderQualityProfileSchema.default(()=>renderQualityProfileSchema.parse({})),
+ export:renderQualityProfileSchema.default(()=>renderQualityProfileSchema.parse({preset:'high',supersampling:2})),
 });
 export const standardQuality=renderQualityProfileSchema.parse({});
 export function qualityProfile(profile:RenderQualityProfile):RenderQualityProfile {

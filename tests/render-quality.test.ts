@@ -15,9 +15,9 @@ test('independent rendering profiles survive save/import/undo without changing t
  expect(doc.film.renderQuality.preview).toEqual(standardQuality);
  expect(doc.film.renderQuality.export).toEqual(film.renderQuality.export);
  expect(videoProject(doc.film).duration).toBe(before.duration);expect(doc.film.clips).toEqual(film.clips);
- expect(history.undo()!.renderQuality.export).toEqual(standardQuality);
+ expect(history.undo()!.renderQuality.export).toEqual({...standardQuality,preset:'high',supersampling:2});
  expect(history.redo()!.renderQuality.export.supersampling).toBe(2);
- const {renderQuality,...old}=film;expect(parseDocument({data,film:old}).film.renderQuality).toEqual({preview:standardQuality,export:standardQuality});
+ const {renderQuality,...old}=film;expect(parseDocument({data,film:old}).film.renderQuality).toEqual({preview:standardQuality,export:{...standardQuality,preset:'high',supersampling:2}});
  expect(renderQualityProfileSchema.safeParse({...standardQuality,supersampling:4}).success).toBe(false);
  expect(renderQualityProfileSchema.safeParse({...standardQuality,shadowResolution:8192}).success).toBe(false);
 });
@@ -56,4 +56,13 @@ test('clip render forwards its quality to 3D while composing text and HUD at fin
  const quality={...standardQuality,preset:'high' as const};renderer.render(film,1,1920,1080,quality);
  expect(calls[0]![2]).toBe(1920);expect(calls[0]![3]).toBe(1080);expect(calls[0]![6]).toBe(quality);
  expect(texts).toContain('Final size');expect(dimensions.every(([w,h])=>w===1920&&h===1080)).toBe(true);
+});
+
+
+test('new films export at high quality and preserve explicitly saved standard quality',()=>{
+ const film=createFilm(data);
+ expect(qualityProfile(film.renderQuality.export).supersampling).toBe(2);
+ expect(film.renderQuality.preview).toEqual(standardQuality);
+ film.renderQuality.export={...standardQuality};
+ expect(parseDocument({data,film}).film.renderQuality.export).toEqual(standardQuality);
 });
