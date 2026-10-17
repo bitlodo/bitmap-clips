@@ -32,3 +32,12 @@ test('a partial text override inherits every field that was not edited',()=>{
  expect(textStyleOverrideSchema.parse({color:'#123456'})).toEqual({color:'#123456'});
  expect(textStyleOverrideSchema.parse({})).toEqual({});
 });
+
+test('new films use the Monument preset while saved styles remain unchanged',()=>{
+ const film=createFilm(data);
+ expect(film.look).toBe('monument');
+ expect(film.sceneStyle).toMatchObject({cameraType:'perspective',background:'void',backgroundColor:'#161a22',accent:'#ff8c00',material:'solid',cubeType:'rounded-small',lightIntensity:1.9,ambientIntensity:4.3,rimIntensity:.25,bloom:0,lightRotation:-92,shadows:true,shadowOpacity:.36,fog:false,grid:false,scanlines:false});
+ expect(parseDocument({data,film}).film).toEqual(film);
+ const legacy={...film,sceneStyle:{}};
+ expect(parseDocument({data,film:legacy}).film.sceneStyle).toEqual({});
+});

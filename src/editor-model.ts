@@ -33,7 +33,7 @@ export interface Project {
  cubeType?:import('./cube-geometry').CubeType;
  cameraType?:'perspective'|'isometric';
  cameraSettings?:{cameraA?:import('./camera-settings').CameraSetting;cameraB?:import('./camera-settings').CameraSetting;rotation?:'none'|'rotating';zoomMode?:'none'|'zoom-in'|'zoom-out';animation?:'none'|'fixed'|'rotating'|'zoom-in';animationSpeed?:number;zoomStrength?:number;zoomEasing?:import('./easing').EasingName;interpolation?:'linear'};
-  backgroundColor?:string;lightIntensity?:number;ambientIntensity?:number;rimIntensity?:number;shadowOpacity?:number;
+  vignette?:number;backgroundColor?:string;lightIntensity?:number;ambientIntensity?:number;rimIntensity?:number;shadowOpacity?:number;
   fog?:boolean;fogNear?:number;fogFar?:number;lightRotation?:number;
   version:4;duration:number;aspect:Aspect;preset:Preset;accent:string;scanlines:boolean;grid:boolean;
   material:MaterialLook;background:'void'|'studio'|'paper';bloom:number;shadows:boolean;score:ScoreStyle;

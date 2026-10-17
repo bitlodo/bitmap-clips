@@ -235,6 +235,11 @@
                 "type": "string",
                 "pattern": "^#[a-f\\d]{6}$"
               },
+              "vignette": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
               "bloom": {
                 "type": "number",
                 "minimum": 0,

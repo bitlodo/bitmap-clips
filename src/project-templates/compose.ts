@@ -1,7 +1,7 @@
 import {filmSchema,makeClip,type Film} from '../clips/film';
 import {settingsFor} from '../clips/registry';
 import {makeText} from '../texts/registry';
-import {styleDefaults,type SceneStyle} from '../scene-style';
+import {sceneStylePreset,type SceneStyle} from '../scene-style';
 import type {SceneData} from '../editor-model';
 export interface SceneSpec {type:string;startFrame:number;durationFrames:number;settings?:Record<string,unknown>;framing?:Film['clips'][number]['framing'];styleOverride?:Film['clips'][number]['styleOverride'];fadeInFrames?:number;fadeOutFrames?:number;}
 export interface TextSpec {type:string;startFrame:number;durationFrames:number;settings?:Record<string,unknown>;position?:Film['texts'][number]['position'];scale?:number;textStyleOverride?:Film['texts'][number]['textStyleOverride'];fadeInFrames?:number;fadeOutFrames?:number;}
@@ -12,7 +12,7 @@ export interface TemplateComposition {
 /** Modules declare their own items and styling; helpers only supply instance defaults. */
 export function composeTemplate(data:SceneData,spec:TemplateComposition):Film {
  const look=spec.look??'monument';
- const film=filmSchema.parse({version:8,fps:30,aspect:spec.aspect??'1:1',look,textStyle:spec.textStyle,sceneStyle:{...styleDefaults(data,look),...spec.sceneStyle},clips:[],texts:[],audio:{enabled:false,score:'deep',volume:.55,...spec.audio}});
+ const film=filmSchema.parse({version:8,fps:30,aspect:spec.aspect??'1:1',look,textStyle:spec.textStyle,sceneStyle:{...sceneStylePreset(data,look),...spec.sceneStyle},clips:[],texts:[],audio:{enabled:false,score:'deep',volume:.55,...spec.audio}});
  film.clips=(spec.scenes??[]).map(scene=>{
   const item=makeClip(scene.type,scene.durationFrames,scene.startFrame);item.settings=settingsFor(scene.type,scene.settings??{});
   if(scene.framing)item.framing=structuredClone(scene.framing);if(scene.styleOverride!==undefined)item.styleOverride=structuredClone(scene.styleOverride);

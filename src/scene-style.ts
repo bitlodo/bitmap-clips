@@ -6,6 +6,7 @@ export const sceneStyleSchema=z.object({
  cameraType:z.enum(['perspective','isometric']).optional(),
  background:z.enum(['void','studio','paper']).optional(),backgroundColor:z.string().regex(/^#[a-f\d]{6}$/i).optional(),
  material:z.enum(['solid','neon','wireframe','hologram']).optional(),accent:z.string().regex(/^#[a-f\d]{6}$/i).optional(),
+ vignette:z.number().min(0).max(1).optional(),
  bloom:z.number().min(0).max(.6).optional(),shadows:z.boolean().optional(),grid:z.boolean().optional(),scanlines:z.boolean().optional(),
  shadowOpacity:z.number().min(0).max(1).optional(),
  fog:z.boolean().optional(),fogNear:z.number().min(0).max(20).optional(),fogFar:z.number().min(.1).max(40).optional(),
@@ -16,6 +17,11 @@ export type SceneStyle=z.infer<typeof sceneStyleSchema>;
 export function styleDefaults(data:SceneData,look:Project['preset']){
  const p=createProject(data,look),paper=p.background==='paper',city=look==='data-city';
  return {cubeType:'rounded-small' as const,cameraType:'perspective' as const,background:p.background,backgroundColor:paper?'#f2ede6':p.background==='studio'?'#182331':'#05070b',material:p.material,accent:p.accent,bloom:p.bloom,shadows:p.shadows,shadowOpacity:paper?.22:.38,grid:false,scanlines:false,fog:false,fogNear:1,fogFar:6,lightRotation:0,lightIntensity:paper?3.4:city?1.5:3.6,ambientIntensity:paper?2.1:city?.7:.65,rimIntensity:paper?.7:2.9};
+}
+/** Presets for new projects and explicit selections; inherited legacy defaults stay stable. */
+export function sceneStylePreset(data:SceneData,look:Project['preset']){
+ const defaults=styleDefaults(data,look);
+ return look==='monument'?{...defaults,cameraType:'perspective' as const,background:'void' as const,backgroundColor:'#161a22',accent:'#ff8c00',material:'solid' as const,cubeType:'rounded-small' as const,lightIntensity:1.9,ambientIntensity:4.3,rimIntensity:.25,bloom:0,lightRotation:-92,shadows:true,shadowOpacity:.36,fog:false,grid:false,scanlines:false}:defaults;
 }
 export interface StyleView {yaw:number;elevation:number;distance:number;pan?:[number,number,number];}
 export function stylePreviewProject(data:SceneData,look:Project['preset'],style:SceneStyle,view:StyleView):Project{

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import type {SceneData} from './editor-model';
-import type {CameraPose} from './camera-motion';
+import {sampleCamera,type CameraPose} from './camera-motion';
+import {cameraEditorPose,type CameraSetting} from './camera-settings';
+import {stylePreviewProject,type SceneStyle,type StyleView} from './scene-style';
 
 /** Orthographic framing matches perspective scale at the orbit target. */
 export function projectionCamera(pose:CameraPose,aspect:number,type='perspective'):THREE.PerspectiveCamera|THREE.OrthographicCamera{
@@ -27,4 +29,12 @@ export function centerStyleCamera(data:SceneData,pose:CameraPose,aspect:number,t
   const shift=right.clone().multiplyScalar(x*halfHeight*aspect).addScaledVector(up,y*halfHeight);
   pose.position.add(shift);pose.target.add(shift);
  }
+}
+
+/** Center once at the reference view, then orbit a fixed target like the camera editor. */
+export function styleEditorPose(data:SceneData,look:import('./editor-model').Project['preset'],style:SceneStyle,view:StyleView,aspect:number):CameraSetting {
+ const project=stylePreviewProject(data,look,style,{yaw:35,elevation:30,distance:1});
+ const base=sampleCamera(data,project,2,aspect);
+ centerStyleCamera(data,base,aspect,project.cameraType);
+ return cameraEditorPose({position:base.position.toArray(),target:base.target.toArray(),fov:base.fov},view);
 }

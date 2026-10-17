@@ -6,13 +6,13 @@
     "aspect": "1:1",
     "look": "monument",
     "sceneStyle": {
-      "cubeType": "chamfered",
+      "cubeType": "rounded-small",
       "cameraType": "perspective",
       "background": "studio",
       "backgroundColor": "#101923",
       "material": "solid",
-      "accent": "#efb568",
-      "bloom": 0.12,
+      "accent": "#ff9100",
+      "bloom": 0,
       "shadows": true,
       "grid": false,
       "scanlines": false,
@@ -21,8 +21,8 @@
       "fogNear": 1,
       "fogFar": 6,
       "lightRotation": -30,
-      "lightIntensity": 3.4,
-      "ambientIntensity": 0.9,
+      "lightIntensity": 1.95,
+      "ambientIntensity": 1.9,
       "rimIntensity": 2.5
     },
     "textStyle": {
@@ -127,7 +127,11 @@
           "pitchOffset": 0,
           "zoom": 1
         },
-        "styleOverride": null,
+        "styleOverride": {
+          "bloom": 0.35,
+          "ambientIntensity": 3.15,
+          "rimIntensity": 3.35
+        },
         "settings": {
           "radialDuration": 0.6,
           "radialStagger": 0.7,
@@ -142,12 +146,25 @@
           "dropHeight": 10,
           "flow": 7,
           "inheritLastCamera": false,
+          "cameraA": {
+            "position": [
+              78.8750227053466,
+              114.83996467242973,
+              114.770575162028
+            ],
+            "target": [
+              0,
+              -13.739999999999998,
+              0
+            ],
+            "fov": 38
+          },
           "rotation": false,
-          "rotationSpeed": 2,
-          "zoomEnabled": false,
+          "rotationSpeed": 1,
+          "zoomEnabled": true,
           "zoomMode": "zoom-in",
-          "cameraZoomStrength": 1,
-          "cameraZoomEasing": "SineInOut"
+          "cameraZoomStrength": 1.2,
+          "cameraZoomEasing": "SineOut"
         }
       }
     ],

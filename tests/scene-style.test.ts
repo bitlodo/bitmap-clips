@@ -27,10 +27,10 @@ test('all scenes inherit background, color and lights, while local scene overrid
 });
 
 test('style settings survive save/import and undo without retiming scenes; old v8 files receive an empty default',()=>{
- const film=createFilm(data),history=new ProjectHistory(film),times=film.clips.map(c=>[c.startFrame,c.durationFrames]);
+ const film=createFilm(data),history=new ProjectHistory(film),times=film.clips.map(c=>[c.startFrame,c.durationFrames]),initialStyle=structuredClone(film.sceneStyle);
  film.sceneStyle={backgroundColor:'#000000',lightIntensity:2};history.record(film);
  expect(parseDocument(JSON.parse(JSON.stringify({data,film}))).film).toEqual(film);expect(film.clips.map(c=>[c.startFrame,c.durationFrames])).toEqual(times);
- expect(history.undo()!.sceneStyle).toEqual({});expect(history.redo()!.sceneStyle).toEqual(film.sceneStyle);
+ expect(history.undo()!.sceneStyle).toEqual(initialStyle);expect(history.redo()!.sceneStyle).toEqual(film.sceneStyle);
  const {sceneStyle,...old}=film;expect(parseDocument({data,film:old}).film.sceneStyle).toEqual({});
  expect(()=>sceneStyleSchema.parse({lightIntensity:-1})).toThrow();expect(()=>sceneStyleSchema.parse({backgroundColor:'white'})).toThrow();
  expect(sceneStyleSchema.parse({shadowOpacity:0}).shadowOpacity).toBe(0);expect(sceneStyleSchema.parse({shadowOpacity:1}).shadowOpacity).toBe(1);expect(()=>sceneStyleSchema.parse({shadowOpacity:1.1})).toThrow();
@@ -48,12 +48,15 @@ test('cube shapes persist and reach both scene and style preview plans',()=>{
  }
 });
 
-test('shared Scene Style controls cover every schema field and work for both form scopes',async()=>{
+test('shared Scene Style controls cover editable fields and hide legacy scanlines in both form scopes',async()=>{
  const {sceneStyleControls,sceneStyleFields}=await import('../src/scene-style-controls');
- expect(sceneStyleControls.map(c=>String(c.key)).toSorted()).toEqual(Object.keys(sceneStyleSchema.shape).toSorted());
+ expect(sceneStyleControls.map(c=>String(c.key)).toSorted()).toEqual(Object.keys(sceneStyleSchema.shape).filter(key=>!['scanlines','background','vignette'].includes(key)).toSorted());
  const values=styleDefaults(data,'monument');
  for(const prefix of ['style','clip-style']){
   const html=sceneStyleFields(values,prefix);
+  expect(html).not.toContain('data-style="scanlines"');
+  expect(html).not.toContain('data-style="background"');
+  expect(html).not.toContain('data-style="vignette"');
   for(const control of sceneStyleControls){expect(html).toContain(`data-style="${control.key}"`);expect(html).toContain(`id="${prefix}-${control.key}"`);}
  }
 });
@@ -66,4 +69,18 @@ test('every local style override persists and takes precedence without changing 
  const project=buildClip({data,look:restored.look,sceneStyle:restored.sceneStyle},restored.clips[0]!).engine;
  for(const [key,value] of Object.entries(override))expect(project[key as keyof typeof project]).toEqual(value);
  expect(restored.sceneStyle).toEqual(global);expect(restored.clips[1]!.styleOverride).toBeNull();
+});
+
+test('legacy vignette values remain compatible with saved projects',()=>{
+ const film=createFilm(data);
+ film.sceneStyle.vignette=.6;
+ film.clips[0]!.styleOverride={vignette:0};
+ const restored=parseDocument({data,film}).film;
+ expect(restored.sceneStyle.vignette).toBe(.6);
+ const clip=restored.clips[0]!;
+ expect(buildClip({data,look:restored.look,sceneStyle:restored.sceneStyle},clip).engine.vignette).toBe(0);
+ expect(stylePreviewProject(data,film.look,film.sceneStyle,{yaw:0,elevation:45,distance:1}).vignette).toBe(.6);
+ expect(sceneStyleSchema.parse({vignette:1}).vignette).toBe(1);
+ expect(()=>sceneStyleSchema.parse({vignette:-.01})).toThrow();
+ expect(()=>sceneStyleSchema.parse({vignette:1.01})).toThrow();
 });

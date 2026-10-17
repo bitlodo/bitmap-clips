@@ -2275,3 +2275,10 @@ body.framing #canvas-wrap { outline: 1px solid var(--mint); }
 .library-add-hint { display: inline-block; white-space: nowrap; color: var(--mint); font-weight: 600; }
 .library-default-style.active { border-color: var(--mint); background: #85dbc014; }
 #inspector-content > h1[tabindex="-1"]:focus { outline: none; }
+
+body.editing-defaults .transport, body.editing-defaults .timeline-panel, body.editing-defaults .timeline-foot { visibility: hidden; }
+body.editing-defaults .library, body.editing-defaults header { opacity: .4; pointer-events: none; }
+body.editing-defaults #canvas-wrap { outline: 1px solid var(--mint); }
+body.editing-defaults #preview { cursor: grab; }
+body.editing-defaults #preview:active { cursor: grabbing; }
+#camera-editor [hidden] { display: none; }

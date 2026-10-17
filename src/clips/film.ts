@@ -1,7 +1,7 @@
 import {importedAudioSchema} from '../imported-audio';
 import {textStyleSchema} from '../text-style';
 import {z} from 'zod';
-import {sceneStyleSchema} from '../scene-style';
+import {sceneStyleSchema,sceneStylePreset} from '../scene-style';
 import {renderQualitySchema} from '../render-quality';
 import {renderResolutionSchema} from '../render-resolution';
 import {itemFadeFrames,itemAlpha} from '../timeline-contract';
@@ -34,7 +34,7 @@ export function suggestedText(p:Film,data:SceneData,c:ClipInstance):FilmText|nul
  const start=clipStart(p,c.id)+Math.round(c.durationFrames*s.from),end=clipStart(p,c.id)+Math.round(c.durationFrames*s.to);
  return makeText(s.template,start,end-start,{source:s.source,txIndex:plan.txIndex});
 }
-export function createFilm(data:SceneData):Film {let start=0;const clips=['reveal','display','display'].map((type,index)=>{const c=makeClip(type,index===2?300:definition(type).duration.default,start);start+=c.durationFrames;return c;});clips.at(-1)!.fadeOutFrames=18;return validateFilm({version:8,fps:30,aspect:'1:1',look:'monument',clips,texts:[],audio:{enabled:true,score:'deep',volume:.55}},data);}
+export function createFilm(data:SceneData):Film {let start=0;const clips=['reveal','display','display'].map((type,index)=>{const c=makeClip(type,index===2?300:definition(type).duration.default,start);start+=c.durationFrames;return c;});clips.at(-1)!.fadeOutFrames=18;return validateFilm({version:8,fps:30,aspect:'1:1',look:'monument',sceneStyle:sceneStylePreset(data,'monument'),clips,texts:[],audio:{enabled:true,score:'deep',volume:.55}},data);}
 
 const legacyAnchor=z.discriminatedUnion('kind',[
  z.object({kind:z.literal('free'),startFrame:z.number().int().min(0),durationFrames:z.number().int().min(15)}),

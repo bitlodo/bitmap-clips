@@ -1,7 +1,6 @@
 import type {SceneStyle} from './scene-style';
 export const sceneStyleControls=[
  {key:'cameraType',label:'Camera',options:[['perspective','Perspective'],['isometric','Isometric']]},
- {key:'background',label:'Background style',options:[['void','Void'],['studio','Studio'],['paper','Paper']]},
  {key:'backgroundColor',label:'Background',kind:'color'},
  {key:'accent',label:'Color',kind:'color'},
  {key:'material',label:'Material',options:[['solid','Solid'],['neon','Neon'],['wireframe','Wireframe'],['hologram','Hologram']]},
@@ -17,7 +16,6 @@ export const sceneStyleControls=[
  {key:'fogNear',label:'Fog near',kind:'number',max:20,step:.1,when:'fog'},
  {key:'fogFar',label:'Fog far',kind:'number',min:.1,max:40,step:.1,when:'fog'},
  {key:'grid',label:'Grid',kind:'checkbox'},
- {key:'scanlines',label:'Scanlines',kind:'checkbox'},
 ] as const satisfies readonly {key:keyof SceneStyle;label:string;kind?:string;options?:readonly (readonly [string,string])[];min?:number;max?:number;step?:number;unit?:string;when?:keyof SceneStyle}[];
 export function sceneStyleFields(values:SceneStyle,prefix:string){
  const renderField=(control:typeof sceneStyleControls[number])=>{

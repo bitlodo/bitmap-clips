@@ -45,3 +45,16 @@ test('isometric uses orthographic projection and centers bounds at different asp
   expect(near.clone().add(right).project(camera).x-near.clone().project(camera).x).toBeCloseTo(far.clone().add(right).project(camera).x-far.clone().project(camera).x,10);
  }
 });
+
+test('default settings orbit keeps a fixed target and uses camera editor spherical rotation',async()=>{
+ const {styleEditorPose}=await import('../src/style-camera');
+ const {cameraEditorPose}=await import('../src/camera-settings');
+ const style=styleDefaults(data,'monument');
+ for(const aspect of [1,16/9,9/16]){
+  const base=styleEditorPose(data,'monument',style,{yaw:35,elevation:30,distance:1},aspect);
+  const view={yaw:110,elevation:60,distance:1.5};
+  const rotated=styleEditorPose(data,'monument',style,view,aspect);
+  expect(rotated.target).toEqual(base.target);
+  expect(rotated).toEqual(cameraEditorPose(base,view));
+ }
+});

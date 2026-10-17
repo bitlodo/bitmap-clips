@@ -3,7 +3,6 @@ import {importAudioFile,decodeImportedAudio,importedWaveform} from './imported-a
 import {applySceneDefaults,applyTextDefaults} from './default-styles';
 import {textStyleSchema,textThemes,type TextStyle} from './text-style';
 import {textStyleFields} from './text-style-controls';
-import {sceneStyleSchema} from './scene-style';
 import {sceneIcon} from './scene-icons';
 import {conditionalControls} from './conditional-controls';
 import {cameraMotionControls} from './camera-animation-controls';
@@ -29,7 +28,7 @@ import {shortcutCommand,repeatableCommand,editingTarget} from './shortcuts';
 import {navigateStyle,defaultStyleView,panStyle} from './style-navigation';
 import {qualityProfile,type RenderQualityProfile} from './render-quality';
 import {previewDimensions} from './render-resolution';
-import {styleDefaults,type SceneStyle,type StyleView} from './scene-style';
+import {styleDefaults,sceneStylePreset,type SceneStyle,type StyleView} from './scene-style';
 import {timelineControls,itemFadeFrames,type TimelineCommon} from './timeline-contract';
 import snapshot from './demo.json';
 import {clips,definition,controlsFor,buildClip,sceneLabel} from './clips/registry';
@@ -60,7 +59,7 @@ const storageKey='bitmap-clip-lab-v8';
 const audioSelection='@soundtrack';
 const renderSelection='@render-settings';
 const sceneDefaultsSelection='@scene-defaults',textDefaultsSelection='@text-defaults';
-let sceneDefaultsDraft:{look:Film['look'];style:SceneStyle}|undefined,textDefaultsDraft:TextStyle|undefined;
+let textDefaultsDraft:TextStyle|undefined;
 let physicsPreviewKey='',physicsPreviewEpoch=0,physicsPreviewTimer:number|undefined;
 const foldoutState=new Map<string,boolean>();
 let libraryDragScale=0;
@@ -160,12 +159,24 @@ function renderPlaybackButton(active:boolean){$('play').innerHTML=`<svg width="1
 function pause(){playEpoch++;playing=false;cancelAnimationFrame(raf);score.stop();renderPlaybackButton(false);$('playback-status').textContent='PAUSED';}
 function togglePlayback(){if(playing||$('playback-status').textContent==='PREPARING')pause();else void play();}
 function framingUI(active:boolean){
- const panel=$('camera-editor');
- if(active){const editor=document.querySelector<HTMLElement>('.editor')!,transport=document.querySelector<HTMLElement>('.transport')!;panel.style.height=`${editor.getBoundingClientRect().bottom-transport.getBoundingClientRect().top}px`;}
- panel.hidden=!active;
- for(const element of all<HTMLElement>('.library,#inspector,header,.transport,.timeline-panel,.timeline-foot'))element.inert=active;
- $('style-canvas-tools').hidden=active||selected!==sceneDefaultsSelection;
+ const defaults=selected===sceneDefaultsSelection&&!draft,visible=active||defaults,panel=$('camera-editor');
+ document.body.classList.toggle('editing-defaults',defaults);
+ if(defaults)panel.style.height='auto';
+ else if(active){const editor=document.querySelector<HTMLElement>('.editor')!,transport=document.querySelector<HTMLElement>('.transport')!;panel.style.height=`${editor.getBoundingClientRect().bottom-transport.getBoundingClientRect().top}px`;}
+ panel.hidden=!visible;
+ for(const element of all<HTMLElement>('.library,header,.transport,.timeline-panel,.timeline-foot'))element.inert=visible;
+ $('inspector').inert=active;
+ $('style-canvas-tools').hidden=true;
+ panel.querySelector<HTMLElement>('.eyebrow')!.textContent=defaults?'SCENE DEFAULTS':'CAMERA EDITING';
+ $('camera-editor-title').textContent=defaults?'Default Scene Settings':'Position your camera';
+ if(defaults)$('camera-editor-context').textContent='Shared appearance for scenes that inherit the defaults.';
+ panel.querySelector<HTMLElement>('.camera-editor-intro')!.textContent=defaults?'Edit settings in the right panel. Changes are saved automatically. Drag the preview to inspect the scene.':'Drag the preview to position your camera. Apply to save, or Cancel to discard.';
+ panel.querySelector<HTMLElement>('.camera-shortcuts')!.textContent=`R: reset · F: fit scene · 1 / 2 / 3: views · Arrow keys: rotate · Esc: ${defaults?'back to timeline':'cancel'}`;
+ panel.querySelector<HTMLElement>('.camera-time-strip')!.hidden=defaults;
+ $('defaults-timeline').hidden=!defaults;
+ $('cancel-framing').hidden=defaults;$('apply-framing').hidden=defaults;
 }
+
 function reflectCameraTime(){
  if(!draft)return;const item=film.clips.find(c=>c.id===draft!.id);if(!item)return;
  const duration=item.durationFrames/30,local=clamp(time-item.startFrame/30,0,duration),input=$<HTMLInputElement>('camera-time');
@@ -185,7 +196,7 @@ function edit(action:(p:Film)=>void,inspect=true,group='',keepPlaying=false){
   try{action(film);film=validateFilm(film,data);history.record(film,group);selectedExists();time=clamp(time,0,Math.max(0,previewFrames(film)/30));save();if(!keepPlaying)renderTimeline();reflectFilm();if(inspect)renderInspector();draw();return true;}
   catch(e){console.error('Project edit failed.',e);film=previous;selected=previousSelected;note((e as Error).message,true);renderTimeline();if(inspect)renderInspector();draw();return false;}
 }
-function select(id:string|null){if(id===sceneDefaultsSelection||id===textDefaultsSelection)pause();if(id!==sceneDefaultsSelection)sceneDefaultsDraft=undefined;if(id!==textDefaultsSelection)textDefaultsDraft=undefined;closeDraft();selected=id;$('style-canvas-tools').hidden=id!==sceneDefaultsSelection&&!draft;renderTimeline();renderInspector();if(id===renderSelection)$('inspector').scrollTop=0;draw();}
+function select(id:string|null){if(id===sceneDefaultsSelection||id===textDefaultsSelection)pause();if(id!==textDefaultsSelection)textDefaultsDraft=undefined;closeDraft();selected=id;framingUI(!!draft);renderTimeline();renderInspector();if(id===renderSelection)$('inspector').scrollTop=0;draw();}
 function cameraNavigationActive(){return !!draft||selected===sceneDefaultsSelection;}
 function selectTab(tab:string){
  contextMenu.close(false);
@@ -205,7 +216,7 @@ function highlightDefaultsPanel(){
   {boxShadow:'inset 0 0 0 2px #85dbc000'},
  ],{duration:1200,easing:'ease-out'});
 }
-$('global-scene-style').onclick=()=>{sceneDefaultsDraft={look:film.look,style:structuredClone(effectiveStyle(film))};select(sceneDefaultsSelection);highlightDefaultsPanel();};
+$('global-scene-style').onclick=()=>{select(sceneDefaultsSelection);highlightDefaultsPanel();};
 $('global-text-style').onclick=()=>{textDefaultsDraft=structuredClone(film.textStyle);select(textDefaultsSelection);highlightDefaultsPanel();};
 $('render-settings').onclick=()=>{if(exporting)return;select(selected===renderSelection?null:renderSelection);};
 function renderQualitySettings(){
@@ -260,17 +271,16 @@ function bindTextStyleFields(root:HTMLElement,id?:string){
 }
 function renderDefaultsPanel(root:HTMLElement){
  const scene=selected===sceneDefaultsSelection;
- if(scene&&!sceneDefaultsDraft)sceneDefaultsDraft={look:film.look,style:structuredClone(effectiveStyle(film))};
  if(!scene&&!textDefaultsDraft)textDefaultsDraft=structuredClone(film.textStyle);
  const scenes=[{value:'monument',label:'Monument'},{value:'data-city',label:'Data City'},{value:'terminal',label:'Terminal'},{value:'editorial',label:'Editorial'}];
- const match=scene?scenes.find(p=>{const defaults=styleDefaults(data,p.value as Film['look']);return Object.entries(defaults).every(([key,value])=>sceneDefaultsDraft!.style[key as keyof SceneStyle]===value);}):undefined;
- root.innerHTML=`<h1>${scene?'Default Scene Settings':'Default Text Style'}</h1><p class="object-description">${scene?'Scenes':'Texts'} inherit these settings unless customized. Presets fill the editable fields below.</p><label for="global-style-preset">${scene?'Scene Preset':'UI Style Preset'}</label><select id="global-style-preset">${scene?options([{value:'custom',label:'Custom'},...scenes],match?.value??'custom'):textPresetOptions(textDefaultsDraft!)}</select><div id="${scene?'global-style-fields':'global-text-fields'}">${scene?sceneStyleFields(sceneDefaultsDraft!.style,'global-scene'):textStyleFields(textDefaultsDraft!,'global-text')}</div><div class="defaults-apply"><label for="defaults-scope">Apply to</label><select id="defaults-scope">${options([{value:'defaults',label:'Global defaults · keep item overrides'},{value:'all',label:'All items · reset item overrides'}],'defaults')}</select><div class="button-row"><button id="cancel-defaults" class="secondary">Cancel</button><button id="apply-defaults" class="primary">${scene?'Apply settings':'Apply style'}</button></div></div>`;
- if(scene){bindStyleFields($('global-style-fields'));$<HTMLSelectElement>('global-style-preset').onchange=()=>{const preset=$<HTMLSelectElement>('global-style-preset').value;if(preset==='custom')return;const look=preset as Film['look'];sceneDefaultsDraft={look,style:styleDefaults(data,look)};renderInspector();draw();};}
+ const match=scene?scenes.find(p=>{const defaults=sceneStylePreset(data,p.value as Film['look']);return Object.entries(defaults).every(([key,value])=>effectiveStyle(film)[key as keyof SceneStyle]===value);}):undefined;
+ root.innerHTML=`<h1>${scene?'Default Scene Settings':'Default Text Style'}</h1><p class="object-description">${scene?'Scenes':'Texts'} inherit these settings unless customized. Presets fill the editable fields below.</p><label for="global-style-preset">${scene?'Scene Preset':'UI Style Preset'}</label><select id="global-style-preset">${scene?options([{value:'custom',label:'Custom'},...scenes],match?.value??'custom'):textPresetOptions(textDefaultsDraft!)}</select><div id="${scene?'global-style-fields':'global-text-fields'}">${scene?sceneStyleFields(effectiveStyle(film),'global-scene'):textStyleFields(textDefaultsDraft!,'global-text')}</div>${scene?'':`<div class="defaults-apply"><label for="defaults-scope">Apply to</label><select id="defaults-scope">${options([{value:'defaults',label:'Global defaults · keep item overrides'},{value:'all',label:'All items · reset item overrides'}],'defaults')}</select><div class="button-row"><button id="cancel-defaults" class="secondary">Cancel</button><button id="apply-defaults" class="primary">Apply style</button></div></div>`}`;
+ if(scene){bindStyleFields($('global-style-fields'));$<HTMLSelectElement>('global-style-preset').onchange=()=>{const preset=$<HTMLSelectElement>('global-style-preset').value;if(preset==='custom')return;const look=preset as Film['look'];edit(p=>Object.assign(p,applySceneDefaults(p,look,sceneStylePreset(data,look))));};return;}
  else {const fields=$('global-text-fields');bindTextStyleFields(fields);$<HTMLSelectElement>('global-style-preset').onchange=()=>{const preset=textThemes.find(p=>p.id===$<HTMLSelectElement>('global-style-preset').value);if(preset){textDefaultsDraft={...preset.style};renderInspector();draw();}};}
  $('cancel-defaults').onclick=()=>select(null);
  $('apply-defaults').onclick=()=>{const all=$<HTMLSelectElement>('defaults-scope').value==='all';
-  const ok=edit(p=>Object.assign(p,scene?applySceneDefaults(p,sceneDefaultsDraft!.look,sceneDefaultsDraft!.style,all):applyTextDefaults(p,textDefaultsDraft!,all)),false);
-  if(ok){sceneDefaultsDraft=undefined;textDefaultsDraft=undefined;renderLibrary();renderInspector();draw();note(scene?'Default scene settings applied.':'Default text style applied.');}
+  const ok=edit(p=>Object.assign(p,applyTextDefaults(p,textDefaultsDraft!,all)),false);
+  if(ok){textDefaultsDraft=undefined;renderLibrary();renderInspector();draw();note('Default text style applied.');}
  };
 }
 function effectiveStyle(p:Film,id?:string){return {...styleDefaults(data,p.look),...p.sceneStyle,...(id?p.clips.find(c=>c.id===id)?.styleOverride:{})};}
@@ -285,10 +295,9 @@ function bindStyleFields(root:HTMLElement,id?:string){
     if(key==='fogNear'&&effective.fogNear>=effective.fogFar)target.fogFar=effective.fogNear+.1;
     if(key==='fogFar'&&effective.fogFar<=effective.fogNear)target.fogNear=Math.max(0,effective.fogFar-.1);
    };
-   const isDraft=root.id==='global-style-fields'&&sceneDefaultsDraft;
-   if(isDraft){const p={...film,look:sceneDefaultsDraft!.look,sceneStyle:{...sceneDefaultsDraft!.style}};changeStyle(p);const parsed=sceneStyleSchema.safeParse(p.sceneStyle);if(!parsed.success){note(parsed.error.issues[0]?.message??'Invalid style value.',true);return;}sceneDefaultsDraft!.style=parsed.data;$<HTMLSelectElement>('global-style-preset').value='custom';draw();}
-   else if(!edit(changeStyle,false,`style:${id??'global'}:${key}`))return;
-   const values=isDraft?{...styleDefaults(data,sceneDefaultsDraft!.look),...sceneDefaultsDraft!.style}:effectiveStyle(film,id);
+   if(!edit(changeStyle,false,`style:${id??'global'}:${key}`))return;
+   if(root.id==='global-style-fields')$<HTMLSelectElement>('global-style-preset').value='custom';
+   const values=effectiveStyle(film,id);
    root.querySelectorAll<HTMLElement>('[data-style-when]').forEach(node=>node.hidden=!values[node.dataset.styleWhen as keyof SceneStyle]);
    root.querySelectorAll<HTMLElement>('[data-style-value]').forEach(node=>{const key=node.dataset.styleValue as keyof SceneStyle,control=sceneStyleControls.find(c=>c.key===key)!;node.textContent=styleValue(values[key],'unit' in control?control.unit:'');});
    root.querySelectorAll<HTMLInputElement>('[data-style="fogNear"],[data-style="fogFar"]').forEach(i=>i.value=String(values[i.dataset.style as 'fogNear'|'fogFar']));
@@ -305,6 +314,7 @@ $('apply-framing').onclick=()=>{if(!draft)return;const current=draft,item=film.c
   if(current.enteringCustom){delete target.cameraA;delete target.cameraB;}
   Object.assign(target,settings,{inheritLastCamera:false});
  });canvas.focus({preventScroll:true});};
+$('defaults-timeline').onclick=()=>{select(null);canvas.focus({preventScroll:true});};
 $('cancel-framing').onclick=()=>{closeDraft();renderInspector();draw();canvas.focus({preventScroll:true});};
 all<HTMLElement>('[data-camera-view]').forEach(button=>button.onclick=()=>commands.execute(button.dataset.cameraView!));
 $('style-reset').onclick=()=>commands.execute('view-reset');$('style-fit').onclick=()=>commands.execute('view-fit');$('style-view-preset').onchange=()=>{commands.execute($<HTMLSelectElement>('style-view-preset').value);$<HTMLSelectElement>('style-view-preset').value='';};
@@ -346,8 +356,8 @@ function timecode(n:number){const hundredths=Math.floor(n*100);return `${Math.fl
 function draw(){
  if(templatePending||!projectWritable||!renderer||exporting)return;
  preparePhysicsPreview();
- try{const stage=$('stage');if(selected===sceneDefaultsSelection){const w=Math.max(100,stage.clientWidth),h=Math.max(100,stage.clientHeight);$('canvas-wrap').style.width=w+'px';$('canvas-wrap').style.height=h+'px';const [rw,rh]=previewDimensions(w,h,renderer.maxRenderSize,devicePixelRatio);renderer.renderStyle(sceneDefaultsDraft?{...film,look:sceneDefaultsDraft.look,sceneStyle:sceneDefaultsDraft.style}:film,styleView,rw,rh,previewQuality());return;}const pad=innerWidth<=650?30:40,ratio=film.aspect==='16:9'?16/9:film.aspect==='9:16'?9/16:1,w=Math.max(100,Math.min(stage.clientWidth-pad,(stage.clientHeight-pad)*ratio)),h=w/ratio;
- $('canvas-wrap').style.width=w+'px';$('canvas-wrap').style.height=h+'px';const [rw,rh]=previewDimensions(w,h,renderer.maxRenderSize,devicePixelRatio);const cameraItem=draft?film.clips.find(c=>c.id===draft!.id):undefined;const previewTime=cameraItem?Math.min(time,(cameraItem.startFrame+cameraItem.durationFrames-1)/30):time;if(selected===textDefaultsSelection){const sample=makeText('cinematic',0,150,{source:'identity'});sample.position='center';sample.fadeInFrames=sample.fadeOutFrames=0;const identity=makeText('bitmap-identity',0,150);identity.fadeInFrames=identity.fadeOutFrames=0;renderer.render({...film,clips:[makeClip('display',150)],texts:[sample,identity],textStyle:textDefaultsDraft??film.textStyle},2,rw,rh,previewQuality());}else renderer.render(film,previewTime,rw,rh,previewQuality(),draft?cameraEditorPose(draft.base,styleView):undefined);if(selected===renderSelection)reflectQualityFrame();updateClock();}
+ try{const stage=$('stage');const pad=innerWidth<=650?30:40,ratio=film.aspect==='16:9'?16/9:film.aspect==='9:16'?9/16:1,w=Math.max(100,Math.min(stage.clientWidth-pad,(stage.clientHeight-pad)*ratio)),h=w/ratio;
+ $('canvas-wrap').style.width=w+'px';$('canvas-wrap').style.height=h+'px';const [rw,rh]=previewDimensions(w,h,renderer.maxRenderSize,devicePixelRatio);if(selected===sceneDefaultsSelection){renderer.renderStyle(film,styleView,rw,rh,previewQuality());return;}const cameraItem=draft?film.clips.find(c=>c.id===draft!.id):undefined;const previewTime=cameraItem?Math.min(time,(cameraItem.startFrame+cameraItem.durationFrames-1)/30):time;if(selected===textDefaultsSelection){const sample=makeText('cinematic',0,150,{source:'identity'});sample.position='center';sample.fadeInFrames=sample.fadeOutFrames=0;const identity=makeText('bitmap-identity',0,150);identity.fadeInFrames=identity.fadeOutFrames=0;renderer.render({...film,clips:[makeClip('display',150)],texts:[sample,identity],textStyle:textDefaultsDraft??film.textStyle},2,rw,rh,previewQuality());}else renderer.render(film,previewTime,rw,rh,previewQuality(),draft?cameraEditorPose(draft.base,styleView):undefined);if(selected===renderSelection)reflectQualityFrame();updateClock();}
  catch(e){note((e as Error).message,true);pause();}
 }
 function updateClock(view:Film=film){reflectCameraTime();reflectItemTiming(view);const total=previewFrames(view),active=activeClip(view,Math.max(0,Math.min(total-1,time*30)));$('timecode').textContent=`${timecode(time)} / ${timecode(total/30)}`;$('active-clip-label').textContent=active?definition(active.clip.type).name.toUpperCase():'';$('playhead').style.left=`${time*30/Math.max(1,total)*100}%`;all<HTMLElement>('.clip-item').forEach(e=>e.classList.toggle('active',!!active&&e.dataset.id===active.clip.id));}
@@ -781,12 +791,12 @@ canvas.onpointermove=e=>{
  if(styleTouches.has(e.pointerId)&&touchStart){
   styleTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});const current=touchGeometry(),start=touchStart;
   if(styleTouches.size===1)styleView={...start.view,yaw:start.view.yaw-(current.x-start.x)*.3,elevation:clamp(start.view.elevation+(current.y-start.y)*.2,10,89)};
-  else {styleView=panStyle(start.view,start.pose.position,start.pose.target,start.pose.fov,canvas.getBoundingClientRect().height,current.x-start.x,current.y-start.y);if(start.span>0&&current.span>0)styleView.distance=clamp(start.view.distance*start.span/current.span,draft?.1:.6,draft?32:8);}
+  else {styleView=panStyle(start.view,start.pose.position,start.pose.target,start.pose.fov,canvas.getBoundingClientRect().height,current.x-start.x,current.y-start.y);if(start.span>0&&current.span>0)styleView.distance=clamp(start.view.distance*start.span/current.span,.1,32);}
   draw();return;
  }
  if(styleDrag){
   if(e.pointerId!==styleDrag.id)return;
-  if(styleDrag.button===1)styleView.distance=clamp(styleDrag.view.distance*Math.exp((e.clientY-styleDrag.y)*.01),draft?.1:.6,draft?32:8);
+  if(styleDrag.button===1)styleView.distance=clamp(styleDrag.view.distance*Math.exp((e.clientY-styleDrag.y)*.01),.1,32);
   else if(styleDrag.button===2)styleView=panStyle(styleDrag.view,styleDrag.pose.position,styleDrag.pose.target,styleDrag.pose.fov,canvas.getBoundingClientRect().height,e.clientX-styleDrag.x,e.clientY-styleDrag.y);
   else {styleView.yaw=styleDrag.yaw-(e.clientX-styleDrag.x)*.3;styleView.elevation=clamp(styleDrag.elevation+(e.clientY-styleDrag.y)*.2,10,89);}
   draw();return;
@@ -797,7 +807,7 @@ function endViewportPointer(e:PointerEvent){if(styleTouches.delete(e.pointerId))
 canvas.onpointerup=canvas.onpointercancel=endViewportPointer;
 canvas.addEventListener('lostpointercapture',endViewportPointer);
 canvas.addEventListener('auxclick',e=>e.preventDefault());
-canvas.addEventListener('wheel',e=>{if(cameraNavigationActive()){e.preventDefault();styleView.distance=clamp(styleView.distance*Math.exp(e.deltaY*.001),draft?.1:.6,draft?32:8);draw();return;}},{passive:false});
+canvas.addEventListener('wheel',e=>{if(cameraNavigationActive()){e.preventDefault();styleView.distance=clamp(styleView.distance*Math.exp(e.deltaY*.001),.1,32);draw();return;}},{passive:false});
 
 function download(blob:Blob,name:string){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 $('save-project').onclick=()=>download(new Blob([JSON.stringify({name:projectName,film,data},null,2)],{type:'application/json'}),`${projectName.replace(/[^a-z0-9._ -]/gi,'_')}.json`);
@@ -906,7 +916,7 @@ commands.register(
  {id:'render-settings',label:'Render settings',run:()=>select(renderSelection)},
  {id:'help',label:'Keyboard shortcuts',shortcut:'?',run:()=>{contextMenu.close(false);$<HTMLDialogElement>('shortcuts-dialog').showModal();}},
  ...(['seek-back','seek-forward','seek-back-ten','seek-forward-ten','seek-start','seek-end'] as const).map(id=>({id,label:id,run:()=>seek(id==='seek-start'?0:id==='seek-end'?previewFrames(film)/30:time+({'seek-back':-1,'seek-forward':1,'seek-back-ten':-10,'seek-forward-ten':10}[id as 'seek-back']??0)/30)})),
- ...(['view-reset','view-fit','view-front','view-top','view-iso','view-left','view-right','view-up','view-down','view-in','view-out'] as const).map(id=>({id,label:({'view-reset':'Reset view','view-fit':'Fit bitmap','view-front':'Front view','view-top':'Top view','view-iso':'Isometric view'} as Record<string,string>)[id]??id,shortcut:({'view-reset':'R','view-fit':'F','view-front':'1','view-top':'2','view-iso':'3'} as Record<string,string>)[id],enabled:()=>cameraNavigationActive(),run:()=>{const previousDistance=styleView.distance;styleView=id==='view-reset'&&draft?structuredClone(draft.initial):navigateStyle(styleView,id,largeViewStep);if(draft&&(id==='view-in'||id==='view-out'))styleView.distance=clamp(previousDistance*(id==='view-in'?1/1.12:1.12),.1,32);draw();canvas.focus({preventScroll:true});}})),
+ ...(['view-reset','view-fit','view-front','view-top','view-iso','view-left','view-right','view-up','view-down','view-in','view-out'] as const).map(id=>({id,label:({'view-reset':'Reset view','view-fit':'Fit bitmap','view-front':'Front view','view-top':'Top view','view-iso':'Isometric view'} as Record<string,string>)[id]??id,shortcut:({'view-reset':'R','view-fit':'F','view-front':'1','view-top':'2','view-iso':'3'} as Record<string,string>)[id],enabled:()=>cameraNavigationActive(),run:()=>{const previousDistance=styleView.distance;styleView=id==='view-reset'&&draft?structuredClone(draft.initial):navigateStyle(styleView,id,largeViewStep);if(id==='view-in'||id==='view-out')styleView.distance=clamp(previousDistance*(id==='view-in'?1/1.12:1.12),.1,32);draw();canvas.focus({preventScroll:true});}})),
 );
 const itemMenuCommands=['copy','cut','paste','duplicate','preview','delete'];
 function openContextActions(target:Element,x:number,y:number){
@@ -936,6 +946,7 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
   if(contextMenu.isOpen){e.preventDefault();contextMenu.close();return;}
   if(cancelTextDrag){e.preventDefault();cancelTextDrag();return;}if(cancelClipResize){e.preventDefault();cancelClipResize();return;}if(cancelClipDrag){e.preventDefault();cancelClipDrag();return;}
+  if(selected===sceneDefaultsSelection){e.preventDefault();select(null);canvas.focus({preventScroll:true});return;}
   $('stage-message').hidden=true;closeDraft();renderInspector();draw();return;
  }
  if(editingTarget(target)||cancelClipResize||textDrag||clipDrag)return;
@@ -946,7 +957,7 @@ document.addEventListener('keydown',e=>{
  contextMenu.close(false);largeViewStep=e.shiftKey;try{if(!commands.execute(id))feedback(id==='paste'?clipboardProblem(timelineClipboard,data.hash)??'Paste is unavailable here.':'Select a scene or text for this action.');}finally{largeViewStep=false;}
 });
 
-new ResizeObserver(()=>{if(draft)framingUI(true);draw();}).observe($('stage'));new ResizeObserver(()=>{renderRuler();renderAudioWaveform();}).observe($('timeline-body'));window.addEventListener('beforeunload',()=>{clearTimeout(saving);try{if(projectWritable){localStorage.setItem(storageKey,JSON.stringify({film,data,projectId,projectName,templatePending,updatedAt:Date.now()}));void persistProject().catch(()=>{});}}catch{}renderer?.dispose();score.dispose();worker?.terminate();});
+new ResizeObserver(()=>{if(cameraNavigationActive())framingUI(!!draft);draw();}).observe($('stage'));new ResizeObserver(()=>{renderRuler();renderAudioWaveform();}).observe($('timeline-body'));window.addEventListener('beforeunload',()=>{clearTimeout(saving);try{if(projectWritable){localStorage.setItem(storageKey,JSON.stringify({film,data,projectId,projectName,templatePending,updatedAt:Date.now()}));void persistProject().catch(()=>{});}}catch{}renderer?.dispose();score.dispose();worker?.terminate();});
 await document.fonts.load('16px "Silkscreen"');
 makeRenderer();source();renderTimeline();reflectFilm();renderInspector();renderLibrary();renderProjectTemplates();draw();save();if(!projectWritable)$('save-state').textContent='No project open';note('');
 

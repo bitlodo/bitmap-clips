@@ -15,15 +15,15 @@ import { drawTitle, type Anchor } from './title-renderer';
 import {modelState,parcelPose,displayParcelPose,sampleFade} from './model-motion';
 import {PhysicsCache,sampleDrop} from './physics-cache';
 const signalShader={
-  uniforms:{tDiffuse:{value:null},time:{value:0},strength:{value:1},resolution:{value:new THREE.Vector2()},paper:{value:0},tDepth:{value:null},orthographic:{value:0},fogEnabled:{value:0},fogNear:{value:0},fogFar:{value:1},cameraNear:{value:.01},cameraFar:{value:10000},background:{value:new THREE.Vector3()}},
+  uniforms:{tDiffuse:{value:null},time:{value:0},strength:{value:1},resolution:{value:new THREE.Vector2()},tDepth:{value:null},orthographic:{value:0},fogEnabled:{value:0},fogNear:{value:0},fogFar:{value:1},cameraNear:{value:.01},cameraFar:{value:10000},background:{value:new THREE.Vector3()}},
   vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
   fragmentShader:`#include <packing>
   uniform float orthographic;uniform sampler2D tDepth;uniform float fogEnabled;uniform float fogNear;uniform float fogFar;uniform float cameraNear;uniform float cameraFar;uniform vec3 background;
-  uniform sampler2D tDiffuse;uniform float time;uniform float strength;uniform vec2 resolution;uniform float paper;varying vec2 vUv;
+  uniform sampler2D tDiffuse;uniform float time;uniform float strength;uniform vec2 resolution;varying vec2 vUv;
   float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   void main(){vec4 pixel=texture2D(tDiffuse,vUv);vec3 c=pixel.rgb;float grain=hash(vUv*resolution+floor(time*30.0));
   c*=1.0-strength*(.02+.02*sin(vUv.y*resolution.y*3.14159));c+=strength*(grain-.5)*.01;
-  float v=1.0-smoothstep(.2,.8,length(vUv-.5));c*=mix(.78+.22*v,1.0,paper);if(fogEnabled>.5){float depth=unpackRGBAToDepth(texture2D(tDepth,vUv));float distance=orthographic>.5?-orthographicDepthToViewZ(depth,cameraNear,cameraFar):-perspectiveDepthToViewZ(depth,cameraNear,cameraFar);float fogAmount=smoothstep(fogNear,fogFar,distance);c=mix(c,background,fogAmount);pixel.a=mix(pixel.a,1.0,fogAmount);}
+  if(fogEnabled>.5){float depth=unpackRGBAToDepth(texture2D(tDepth,vUv));float distance=orthographic>.5?-orthographicDepthToViewZ(depth,cameraNear,cameraFar):-perspectiveDepthToViewZ(depth,cameraNear,cameraFar);float fogAmount=smoothstep(fogNear,fogFar,distance);c=mix(c,background,fogAmount);pixel.a=mix(pixel.a,1.0,fogAmount);}
   gl_FragColor=vec4(c,pixel.a);}`,
 };
 export class FilmRenderer{
@@ -159,7 +159,7 @@ export class FilmRenderer{
     });
     this.mesh.instanceMatrix.needsUpdate=true;if(this.mesh.instanceColor)this.mesh.instanceColor.needsUpdate=true;
     this.ground.visible=project.shadows&&model.isolate<.98;(this.ground.material as THREE.ShadowMaterial).opacity=(project.shadowOpacity===undefined?(project.background==='paper'?.22:.38):1)*(1-model.isolate)*model.opacity;this.materialTime.value=time;
-    this.bloom.enabled=project.bloom>.001;this.bloom.strength=project.bloom;this.fx.uniforms.time!.value=time;this.fx.uniforms.strength!.value=project.scanlines?1:0;this.fx.uniforms.paper!.value=project.background==='paper'?1:0;
+    this.bloom.enabled=project.bloom>.001;this.bloom.strength=project.bloom;this.fx.uniforms.time!.value=time;this.fx.uniforms.strength!.value=project.scanlines?1:0;
     this.renderFogDepth(plan.internalWidth,plan.internalHeight);
     this.composer.render(0);
     // Compose the selected sRGB background after tone mapping and glow.

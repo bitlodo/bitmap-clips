@@ -1,3 +1,4 @@
+import {styleEditorPose} from '../style-camera';
 import type {RenderQualityProfile} from '../render-quality';
 import {stylePreviewProject,type StyleView} from '../scene-style';
 import {FilmRenderer} from '../film-renderer';
@@ -38,7 +39,7 @@ export class ClipFilmRenderer {
   }
   background(p:Film){const key=JSON.stringify([p.look,p.sceneStyle]);let project=this.backgrounds.get(key);if(!project){project=createProject(this.data,p.look);Object.assign(project,p.sceneStyle);project.shots=[];project.models=[];project.titles=[];project.fades=[];if(this.backgrounds.size>40)this.backgrounds.clear();this.backgrounds.set(key,project);}return project;}
   renderStyle(p:Film,view:StyleView,width:number,height:number,quality?:RenderQualityProfile){
-   this.engine.render(stylePreviewProject(this.data,p.look,p.sceneStyle,view),2,width,height,undefined,false,quality,view.pan,true);
+   this.engine.render(stylePreviewProject(this.data,p.look,p.sceneStyle,view),2,width,height,undefined,false,quality,undefined,false,styleEditorPose(this.data,p.look,p.sceneStyle,view,width/height));
    if(this.canvas.width!==width)this.canvas.width=width;if(this.canvas.height!==height)this.canvas.height=height;
    const ctx=this.canvas.getContext('2d')!;ctx.clearRect(0,0,width,height);ctx.drawImage(this.engine.canvas,0,0,width,height);this.modelVisible=true;Object.assign(this.canvas.dataset,this.engine.canvas.dataset);
   }
